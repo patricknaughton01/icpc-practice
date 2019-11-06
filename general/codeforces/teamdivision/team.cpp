@@ -4,6 +4,7 @@
 
 #define INFTY 1000000000000000000
 #define MINLEN 3
+#define MIN(x, y) ((x)<(y)?(x):(y))
 
 using namespace std;
 
@@ -20,8 +21,33 @@ ostream& operator<<(ostream &c, const student &s){
     return c;
 }
 
-long long min_partition(vector<student> &s, long long start, long long end){
-    
+long long eval_partition(const vector<student> &s, 
+    const vector<long long> &dp, long long i, long long p){
+    return dp[p+1] + s[i].skill - s[p].skill;
+}
+
+long long min_partition(const vector<student> &s, const vector<long long> &dp, 
+    long long i, long long start, long long end)
+{
+    if(end <= start){
+        return -1;
+    }
+    if(end - start == 1){
+        return start;
+    }
+    long long mid = (end - start)/2 + start;
+    //cout << "Start: " << start << " Mid: " << mid << " End: " << end << endl;
+    long long mid_p = eval_partition(s, dp, i, mid);
+    long long mid_r_p = eval_partition(s, dp, i, mid+1);
+    long long mid_l_p = eval_partition(s, dp, i, mid-1);
+    if(mid_p <= mid_r_p && mid_p <= mid_l_p){
+        // mid is min ==> we found the min
+        return mid;
+    }else if(mid_l_p < mid_p){
+        return min_partition(s, dp, i, start, mid);
+    }else{
+        return min_partition(s, dp, i, mid+1, end);
+    }
 }
 
 int main(){
@@ -35,7 +61,8 @@ int main(){
         students.push_back(s);
     }
     // sort students in decreasing order by skill
-    sort(students.begin(), students.end(), [](student a, student b){return a.skill > b.skill;});
+    sort(students.begin(), students.end(), 
+        [](student a, student b){return a.skill > b.skill;});
     /*for(long long i = 0; i<n; i++){
         cout << students[i] << endl;
     }*/
@@ -48,7 +75,7 @@ int main(){
         dp[i] = last_div;
     }
     for(long long i = n-MINLEN; i>=0; i--){
-        long long min_div = INFTY;
+        /*long long min_div = INFTY;
         for(long long j = i+MINLEN-1; j < n; j++){
             long long div;
             if(n - j > MINLEN){
@@ -67,8 +94,19 @@ int main(){
                 break;
             }
         }
-        dp[i] = min_div;
+        dp[i] = min_div;*/
+        //cout << i + MINLEN -1 << " " << n-MINLEN << endl;
+        long long ind = min_partition(students, dp, i, i+MINLEN-1, n-MINLEN + 1);
+        if(ind == -1){
+            dp[i] = students[i].skill - students[n-1].skill;
+        }else{
+            dp[i] = MIN(eval_partition(students, dp, i, ind), 
+                students[i].skill - students[n-1].skill);
+        }
     }
+    /*for(long long i = 0; i<dp.size(); i++){
+        cout << dp[i] << endl;
+    }*/
     long long team = 1;
     long long last_ind = 0;
     students[0].team = team;
