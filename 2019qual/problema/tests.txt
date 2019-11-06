@@ -1,0 +1,31 @@
+4
+T F T F
+A - - - - - B * C - - - - - - D + - - - - - - +
+
+4
+T F T F
+C D + - A B * +
+
+4
+T T T T
+A -
+
+4
+T T T T
+B -
+
+4
+T T T T
+C -
+
+4
+T T T T
+D -
+
+4
+T F T F
+A B * C + D *
+
+7
+T F T F T F F
+A B + C * D E * - F G + + - * - A +
