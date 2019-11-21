@@ -1,12 +1,30 @@
 #include <iostream>
 #include <vector>
+#include <set>
 #include <algorithm>
 
 #define INFTY 1000000000000000000
 #define MINLEN 3
 #define MIN(x, y) ((x)<(y)?(x):(y))
+#define MAX(x, y) ((x)>(y)?(x):(y))
 
 using namespace std;
+
+template <typename T>
+void print_vec(vector<T> vec){
+    for(auto iter = vec.begin(); iter != vec.end(); iter++){
+        cout << *iter << " ";
+    }
+    cout << endl;
+}
+
+template <typename T>
+void print_set(set<T> set){
+    for(auto iter = set.begin(); iter != set.end(); iter++){
+        cout << *iter << " ";
+    }
+    cout << endl;
+}
 
 struct student{
     long long skill;
@@ -19,35 +37,6 @@ struct student{
 ostream& operator<<(ostream &c, const student &s){
     c << "Student(" << s.skill << ", " << s.index << ", " << s.team << ");";
     return c;
-}
-
-long long eval_partition(const vector<student> &s, 
-    const vector<long long> &dp, long long i, long long p){
-    return dp[p+1] + s[i].skill - s[p].skill;
-}
-
-long long min_partition(const vector<student> &s, const vector<long long> &dp, 
-    long long i, long long start, long long end)
-{
-    if(end <= start){
-        return -1;
-    }
-    if(end - start == 1){
-        return start;
-    }
-    long long mid = (end - start)/2 + start;
-    //cout << "Start: " << start << " Mid: " << mid << " End: " << end << endl;
-    long long mid_p = eval_partition(s, dp, i, mid);
-    long long mid_r_p = eval_partition(s, dp, i, mid+1);
-    long long mid_l_p = eval_partition(s, dp, i, mid-1);
-    if(mid_p <= mid_r_p && mid_p <= mid_l_p){
-        // mid is min ==> we found the min
-        return mid;
-    }else if(mid_l_p < mid_p){
-        return min_partition(s, dp, i, start, mid);
-    }else{
-        return min_partition(s, dp, i, mid+1, end);
-    }
 }
 
 int main(){
@@ -63,67 +52,78 @@ int main(){
     // sort students in decreasing order by skill
     sort(students.begin(), students.end(), 
         [](student a, student b){return a.skill > b.skill;});
-    /*for(long long i = 0; i<n; i++){
-        cout << students[i] << endl;
-    }*/
-    vector<long long> dp(n+1, 0);
-    dp[n] = INFTY;
-    // min diversity of smallest end team is third to last student minus
-    // last student b/c in sorted order
-    long long last_div = students[n-MINLEN].skill - students[n-1].skill;
-    for(long long i = n-1; i>=n-MINLEN; i--){
-        dp[i] = last_div;
-    }
-    for(long long i = n-MINLEN; i>=0; i--){
-        /*long long min_div = INFTY;
-        for(long long j = i+MINLEN-1; j < n; j++){
-            long long div;
-            if(n - j > MINLEN){
-                // We can consider partitioning into a new team
-                div = students[i].skill - students[j].skill;
-                div += dp[j+1];
-                if(div < min_div){
-                    min_div = div;
-                }
-            }else{  // only enough for one team
-                div = students[i].skill - students[n-1].skill;
-                if(div < min_div){
-                    min_div = div;
-                }
-                j = n-1;
-                break;
+    if(n < 2*MINLEN){
+        // Can only have one team, so diversity is just best-worst
+        cout << students[0].skill - students[n-1].skill << " " << 1 << endl;
+        for(long long i = 0; i<n; i++){
+            cout << 1 << " ";
+        }
+        cout << endl;
+    }else{
+        // savings[i] stores how much diversity is saved by partitioning
+        // between the ith and i+1th students
+        vector<long long> savings;
+        for(long long i = 0; i<n-1; i++){
+            savings.push_back(students[i].skill - students[i+1].skill);
+        }
+        //print_vec(students);
+        //print_vec(savings);
+        vector<long long> dp(n-(MINLEN-1), 0);
+        vector<long long> split_inds;
+        // We now want to max the amount of diversity we save, but if we make
+        // a partition in one spot i, we cannot partition within two places
+        // of i (forward or backwards).
+        for(long long i = MINLEN; i<dp.size(); i++){
+            long long split_val = savings[i-1] + dp[i-MINLEN];
+            long long no_split_val = dp[i-1];
+            // Prefer to split even if technically no benefit
+            // Done to avoid runtime error if split_inds is empty.
+            if(split_val >= no_split_val){
+                dp[i] = split_val;
+                split_inds.push_back(i-1);
+            }else{
+                dp[i] = no_split_val;
             }
         }
-        dp[i] = min_div;*/
-        //cout << i + MINLEN -1 << " " << n-MINLEN << endl;
-        long long ind = min_partition(students, dp, i, i+MINLEN-1, n-MINLEN + 1);
-        if(ind == -1){
-            dp[i] = students[i].skill - students[n-1].skill;
+        //print_vec(dp);
+        //print_vec(split_inds);
+        // Total savings is now dp[dp.size()-1]
+        if(split_inds.size() > 0){
+            long long last_split = INFTY;
+            vector<long long> cleaned_splits;
+            for(long long i = split_inds.size()-1; i>=0; i--){
+                if(last_split - split_inds[i] >= MINLEN){
+                    cleaned_splits.push_back(split_inds[i]);
+                    last_split = split_inds[i];
+                }
+            }
+            //print_vec(cleaned_splits);
+            long long idx = cleaned_splits.size() - 1;
+            long long team = 1;
+            for(long long i = 0; i<students.size(); i++){
+                students[i].team = team;
+                if(i == cleaned_splits[idx]){
+                    team++;
+                    idx--;
+                }
+            }
+            cout << students[0].skill - students[n-1].skill - dp[dp.size()-1] 
+                << " " << team << endl;
+            sort(students.begin(), students.end(), 
+                [](student a, student b){return a.index < b.index;});
+            for(long long i = 0; i<students.size(); i++){
+                cout << students[i].team << " ";
+            }
+            cout << endl;
         }else{
-            dp[i] = MIN(eval_partition(students, dp, i, ind), 
-                students[i].skill - students[n-1].skill);
+            cout << students[0].skill - students[n-1].skill - dp[dp.size()-1] 
+                << " " << 1 << endl;
+            for(long long i = 0; i<n; i++){
+                cout << 1 << " ";
+            }
+            cout << endl;
         }
     }
-    /*for(long long i = 0; i<dp.size(); i++){
-        cout << dp[i] << endl;
-    }*/
-    long long team = 1;
-    long long last_ind = 0;
-    students[0].team = team;
-    for(long long i = 1; i<n; i++){
-        if((dp[last_ind] - dp[i] == students[last_ind].skill - students[i-1].skill) 
-            && i <= n-MINLEN){
-            team++;
-            last_ind = i;
-        }
-        students[i].team = team;
-    }
-    sort(students.begin(), students.end(), [](student a, student b){return a.index < b.index;});
-    cout << dp[0] << " " << team << endl;
-    for(long long i = 0; i<students.size(); i++){
-        cout << students[i].team << " ";
-    }
-    cout << endl;
     return 0;
 }
 
