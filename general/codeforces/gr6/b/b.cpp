@@ -21,19 +21,24 @@ void print(T s, T e){
     cout << endl;
 }
 
-template <class T>
-void print_d(T s, T e){
-    for(auto iter = s; iter != e; iter++){
-        cout << "(" << iter->first << "->" << iter->second << ") ";
-    }
-    cout << endl;
-}
 
 int main(){
-    long long t;
+    int t;
     cin >> t;
-    for(long long i = 0; i<t; i++){
-        
+    for(int i = 0; i<t; i++){
+        unsigned long long targ;
+        cin >> targ;
+        //cout << targ << endl;
+        if(targ > 14){
+            targ%=14;
+            if(targ>=1 && targ<=6){
+                cout << "YES" << endl;
+            }else{
+                cout << "NO" << endl;
+            }
+        }else{
+            cout << "NO" << endl;
+        }
     }
     return 0;
 }

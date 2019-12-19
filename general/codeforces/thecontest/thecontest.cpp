@@ -21,19 +21,10 @@ void print(T s, T e){
     cout << endl;
 }
 
-template <class T>
-void print_d(T s, T e){
-    for(auto iter = s; iter != e; iter++){
-        cout << "(" << iter->first << "->" << iter->second << ") ";
-    }
-    cout << endl;
-}
 
 int main(){
-    long long t;
-    cin >> t;
-    for(long long i = 0; i<t; i++){
-        
-    }
+    long long k1, k2, k3;
+    cin >> k1 >> k2 >> k3;
+    
     return 0;
 }

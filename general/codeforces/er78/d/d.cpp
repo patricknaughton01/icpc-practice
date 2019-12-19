@@ -30,9 +30,9 @@ void print_d(T s, T e){
 }
 
 int main(){
-    long long t;
-    cin >> t;
-    for(long long i = 0; i<t; i++){
+    long long n;
+    cin >> n;
+    for(long long i = 0; i<n; i++){
         
     }
     return 0;
