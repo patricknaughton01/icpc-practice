@@ -23,7 +23,22 @@ void print(T s, T e){
 
 
 int main(){
-    vector<int> x(10, 0);
-    print(x.begin(), x.end());
+    int t;
+    cin >> t;
+    for(int i = 0; i<t; i++){
+        unsigned long long targ;
+        cin >> targ;
+        //cout << targ << endl;
+        if(targ > 14){
+            targ%=14;
+            if(targ>=1 && targ<=6){
+                cout << "YES" << endl;
+            }else{
+                cout << "NO" << endl;
+            }
+        }else{
+            cout << "NO" << endl;
+        }
+    }
     return 0;
 }

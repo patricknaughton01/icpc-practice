@@ -23,7 +23,8 @@ void print(T s, T e){
 
 
 int main(){
-    vector<int> x(10, 0);
-    print(x.begin(), x.end());
+    long long k1, k2, k3;
+    cin >> k1 >> k2 >> k3;
+    
     return 0;
 }
